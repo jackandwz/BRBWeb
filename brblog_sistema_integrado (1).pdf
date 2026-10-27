@@ -1,0 +1,2203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRBLog - Sistema Integrado</title>
+    <style>
+      :root {
+          --primary-blue: #0066cc;
+          --hover-blue: #0052a3;
+          --btn-gray: #e9ecef;
+          --border-color: #cccccc;
+          --text-dark: #333333;
+          --secondary-color: #6c757d;
+          
+          --bg-app: #f4f6f9;
+          --bg-card: #ffffff;
+          --bg-sidebar: #ffffff;
+          --bg-input: #ffffff;
+          --text-primary: #1f2937;
+          --text-secondary: #4b5563;
+          --text-muted: #9ca3af;
+          --table-header: #f8fafc;
+      }
+
+      body.dark-mode {
+          --bg-app: #0f172a;
+          --bg-card: #1e293b;
+          --bg-sidebar: #0f172a;
+          --bg-input: #334155;
+          --text-primary: #f8fafc;
+          --text-secondary: #cbd5e1;
+          --text-muted: #94a3b8;
+          --border-color: #334155;
+          --table-header: #1e293b;
+      }
+
+      * {
+          box-sizing: border-box;
+      }
+
+      body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          margin: 0;
+          padding: 0;
+          background-color: var(--bg-app);
+          color: var(--text-primary);
+          display: flex;
+          height: 100vh;
+          overflow: hidden;
+          transition: background-color 0.2s ease, color 0.2s ease;
+      }
+
+      /* PAINEL LATERAL (MENU) */
+      .sidebar {
+          width: 250px;
+          background-color: var(--bg-sidebar);
+          border-right: 1px solid var(--border-color);
+          padding: 15px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          flex-shrink: 0;
+      }
+
+      .menu-header {
+          margin-bottom: 15px;
+      }
+
+      .menu-header h4 {
+          margin: 0;
+          font-size: 0.9rem;
+          color: #555;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+      }
+
+      .menu-header h2 {
+          margin: 3px 0 0 0;
+          font-size: 1.1rem;
+          color: var(--text-primary);
+          font-weight: bold;
+      }
+
+      .menu-buttons {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+      }
+
+      .btn-menu {
+          width: 100%;
+          padding: 10px 12px;
+          border: none;
+          border-radius: 3px;
+          font-weight: bold;
+          font-size: 0.88rem;
+          text-align: left;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: background-color 0.2s;
+      }
+
+      .btn-blue {
+          background-color: var(--primary-blue);
+          color: #ffffff;
+      }
+
+      .btn-blue:hover {
+          background-color: var(--hover-blue);
+      }
+
+      .btn-gray-custom {
+          background-color: var(--btn-gray);
+          color: #333;
+          border: 1px solid #ccc;
+      }
+
+      .btn-gray-custom:hover {
+          background-color: #dde1e5;
+      }
+
+      /* ESTILO DO BOTÃO SLIDE (TOGGLE SWITCH) */
+      .sidebar-toggle-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 8px 12px;
+          background-color: var(--btn-gray);
+          border: 1px solid #ccc;
+          border-radius: 3px;
+          font-size: 0.88rem;
+          font-weight: bold;
+          color: #333;
+      }
+
+      .switch {
+          position: relative;
+          display: inline-block;
+          width: 36px;
+          height: 20px;
+      }
+
+      .switch input { 
+          opacity: 0;
+          width: 0;
+          height: 0;
+      }
+
+      .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background-color: #ccc;
+          transition: .3s;
+          border-radius: 20px;
+      }
+
+      .slider:before {
+          position: absolute;
+          content: "";
+          height: 14px;
+          width: 14px;
+          left: 3px;
+          bottom: 3px;
+          background-color: white;
+          transition: .3s;
+          border-radius: 50%;
+      }
+
+      input:checked + .slider {
+          background-color: var(--primary-blue);
+      }
+
+      input:checked + .slider:before {
+          transform: translateX(16px);
+      }
+
+      .footer-buttons {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          margin-top: 15px;
+      }
+
+      /* ÁREA DE CONTEÚDO PRINCIPAL */
+      .main-content {
+          flex: 1;
+          padding: 15px 20px;
+          display: flex;
+          flex-direction: column;
+          overflow-y: auto;
+          background-color: var(--bg-app);
+      }
+
+      .view-section {
+          display: none;
+          flex-direction: column;
+          height: 100%;
+      }
+
+      .view-section.active {
+          display: flex;
+      }
+
+      /* DASHBOARD (TABELA) */
+      .dashboard-header {
+          margin-bottom: 15px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+      }
+
+      .dashboard-header h3 {
+          margin: 0;
+          color: var(--primary-blue);
+          font-size: 1.05rem;
+          font-weight: bold;
+      }
+
+      .hint-text {
+          font-size: 0.8rem;
+          color: #666;
+          font-style: italic;
+      }
+
+      .table-container {
+          flex: 1;
+          border: 1px solid var(--border-color);
+          overflow-y: auto;
+          background-color: var(--bg-card);
+          border-radius: 4px;
+      }
+
+      table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 0.85rem;
+          text-align: left;
+      }
+
+      th {
+          background-color: var(--table-header);
+          color: var(--text-primary);
+          padding: 8px 10px;
+          border: 1px solid var(--border-color);
+          font-weight: normal;
+          position: sticky;
+          top: 0;
+          z-index: 10;
+      }
+
+      td {
+          padding: 8px 10px;
+          border-bottom: 1px solid var(--border-color);
+          color: var(--text-primary);
+      }
+
+      tr { cursor: pointer; }
+      tr:nth-child(even) { background-color: rgba(0, 0, 0, 0.02); }
+      tr:hover { background-color: rgba(0, 102, 204, 0.08); }
+
+      .empty-row {
+          text-align: center;
+          color: var(--text-muted);
+          padding: 20px;
+          cursor: default;
+      }
+
+      /* FORMULÁRIO DE NOVO ATENDIMENTO */
+      .form-preview-grid {
+          display: flex;
+          gap: 20px;
+          flex: 1;
+          padding-bottom: 10px;
+      }
+
+      .form-column {
+          flex: 1;
+          background: var(--bg-card);
+          padding-right: 5px;
+      }
+
+      .preview-column {
+          flex: 1;
+          background: var(--bg-card);
+          display: flex;
+          flex-direction: column;
+      }
+
+      fieldset {
+          border: 1px solid var(--border-color);
+          border-radius: 6px;
+          padding: 12px 15px;
+          margin-bottom: 15px;
+          background-color: var(--bg-card);
+      }
+
+      legend {
+          font-weight: bold;
+          color: var(--primary-blue);
+          font-size: 0.95rem;
+          padding: 0 5px;
+      }
+
+      .input-group {
+          margin-bottom: 10px;
+          display: flex;
+          flex-direction: column;
+          position: relative;
+      }
+
+      .input-group-row {
+          display: flex;
+          gap: 10px;
+          align-items: flex-start;
+          margin-bottom: 10px;
+      }
+
+      label {
+          font-size: 0.85rem;
+          font-weight: 600;
+          margin-bottom: 3px;
+          color: var(--text-secondary);
+      }
+
+      input[type="text"], input[type="date"], select, textarea {
+          padding: 7px 10px;
+          border: 1px solid var(--border-color);
+          border-radius: 4px;
+          font-size: 0.9rem;
+          font-family: inherit;
+          outline: none;
+          transition: border-color 0.2s;
+          box-sizing: border-box;
+          width: 100%;
+          background-color: var(--bg-input);
+          color: var(--text-primary);
+      }
+
+      input[type="text"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
+          border-color: var(--primary-blue);
+      }
+
+      .cpf-container {
+          display: flex;
+          gap: 5px;
+          align-items: center;
+      }
+
+      .btn-mini {
+          padding: 7px 10px;
+          background-color: var(--secondary-color);
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 0.85rem;
+          height: 35px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+      }
+
+      .btn-mini:hover { opacity: 0.85; }
+
+      .radio-group {
+          display: flex;
+          gap: 15px;
+          align-items: center;
+          font-size: 0.9rem;
+          margin-top: 5px;
+          color: var(--text-primary);
+      }
+
+      .alert-restricoes {
+          display: none;
+          background-color: #fff0f0;
+          border: 1px solid #f5c6cb;
+          color: #d9534f;
+          padding: 10px 12px;
+          border-radius: 5px;
+          font-size: 0.8rem;
+          margin-top: 10px;
+          line-height: 1.4;
+      }
+
+      .alert-restricoes strong { color: #b52b27; }
+      .alert-restricoes ul { margin: 4px 0 8px 18px; padding: 0; }
+
+      /* PRÉ-VISUALIZAÇÃO COM SCROLL FIXO (STICKY) */
+      .preview-box, .pre-visualizacao {
+          flex: 1;
+          background-color: var(--bg-card);
+          border: 1px dashed var(--border-color);
+          padding: 15px;
+          font-family: 'Consolas', 'Courier New', monospace;
+          font-size: 0.85rem;
+          white-space: pre-wrap;
+          overflow-y: auto;
+          border-radius: 4px;
+          min-height: 400px;
+          color: var(--text-primary);
+          position: sticky;
+          top: 20px;
+          align-self: flex-start;
+          max-height: calc(100vh - 40px);
+      }
+
+      .btn-container {
+          display: flex;
+          gap: 10px;
+          margin-top: 15px;
+      }
+
+      .btn-action {
+          padding: 9px 16px;
+          border: none;
+          border-radius: 4px;
+          font-weight: bold;
+          font-size: 0.9rem;
+          cursor: pointer;
+          color: white;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          transition: opacity 0.2s;
+      }
+
+      .btn-action:hover { opacity: 0.9; }
+      .btn-save { background-color: var(--primary-blue); }
+      .btn-copy-log { background-color: var(--primary-blue); }
+      .btn-clear { background-color: var(--secondary-color); }
+
+      .validation-msg {
+          font-size: 0.75rem;
+          margin-top: 2px;
+          font-weight: bold;
+          height: 14px;
+      }
+
+      /* TIMER DE PAUSA */
+      .pause-timer-container {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background-color: var(--bg-card);
+          border: 1px solid var(--border-color);
+          padding: 4px 10px;
+          border-radius: 6px;
+          transition: background-color 0.3s ease, border-color 0.3s ease;
+      }
+
+      .pause-timer-label {
+          font-size: 0.85rem;
+          font-weight: bold;
+      }
+
+      .pause-timer-display {
+          font-family: 'Consolas', monospace;
+          font-weight: bold;
+          font-size: 0.95rem;
+          color: var(--text-primary);
+          min-width: 50px;
+          text-align: center;
+      }
+
+      .pause-timer-btn {
+          background: none;
+          border: 1px solid var(--border-color);
+          border-radius: 4px;
+          cursor: pointer;
+          padding: 3px 6px;
+          font-size: 0.8rem;
+          color: var(--text-primary);
+          transition: background 0.2s;
+      }
+
+      .pause-timer-btn:hover {
+          background-color: var(--btn-gray);
+      }
+
+      .pause-timer-btn-add {
+          background-color: var(--primary-blue);
+          color: white;
+          border: none;
+          font-weight: bold;
+      }
+
+      .pause-timer-btn-add:hover {
+          background-color: var(--hover-blue);
+      }
+
+      /* IA DE APOIO */
+      .ia-container {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          background: var(--bg-card);
+          border: 1px solid var(--border-color);
+          border-radius: 6px;
+          padding: 15px;
+      }
+
+      .ia-chat-box {
+          flex: 1;
+          border: 1px solid var(--border-color);
+          border-radius: 4px;
+          padding: 15px;
+          background-color: var(--bg-card);
+          overflow-y: auto;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          font-size: 1rem;
+          margin-bottom: 15px;
+          white-space: pre-wrap;
+          line-height: 1.5;
+          color: var(--text-primary);
+      }
+
+      .ia-input-row {
+          display: flex;
+          gap: 10px;
+          align-items: center;
+      }
+
+      .ia-input-row input {
+          flex: 1;
+          padding: 9px 12px;
+          font-size: 1rem;
+          border: 1px solid var(--border-color);
+          border-radius: 4px;
+          outline: none;
+          background-color: var(--bg-input);
+          color: var(--text-primary);
+      }
+
+      .ia-input-row input:focus { border-color: var(--primary-blue); }
+
+      .btn-ia-enviar {
+          background-color: var(--primary-blue);
+          color: white;
+          padding: 9px 18px;
+          border: none;
+          border-radius: 4px;
+          font-weight: bold;
+          cursor: pointer;
+          font-size: 0.95rem;
+      }
+
+      .btn-ia-aprender {
+          background-color: var(--secondary-color);
+          color: white;
+          padding: 9px 18px;
+          border: none;
+          border-radius: 4px;
+          font-weight: bold;
+          cursor: pointer;
+          font-size: 0.95rem;
+      }
+
+      .btn-ia-enviar:hover, .btn-ia-aprender:hover { opacity: 0.9; }
+
+      /* PROCEDIMENTOS */
+      .procedimentos-container {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          background: var(--bg-card);
+          border: 1px solid var(--border-color);
+          border-radius: 4px;
+          padding: 15px;
+      }
+
+      .procedimentos-header-title {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          font-size: 0.95rem;
+          font-weight: bold;
+          color: var(--text-primary);
+          margin-bottom: 2px;
+      }
+
+      .procedimentos-divider {
+          color: var(--text-secondary);
+          font-weight: bold;
+          margin-bottom: 15px;
+          font-family: monospace;
+      }
+
+      .procedimentos-box {
+          flex: 1;
+          border: 1px solid var(--border-color);
+          padding: 15px 20px;
+          background-color: var(--bg-card);
+          overflow-y: auto;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          font-size: 0.9rem;
+          color: var(--text-primary);
+          line-height: 1.5;
+          white-space: pre-wrap;
+      }
+
+      /* CONSULTA HISTÓRICO */
+      .consulta-container {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          background: var(--bg-card);
+      }
+
+      .filtros-box {
+          border: 1px solid var(--border-color);
+          border-radius: 6px;
+          padding: 12px 15px;
+          margin-bottom: 15px;
+          background-color: var(--bg-card);
+      }
+
+      .filtros-box legend {
+          font-weight: bold;
+          color: var(--primary-blue);
+          font-size: 0.95rem;
+          padding: 0 5px;
+      }
+
+      .filtros-grid {
+          display: flex;
+          gap: 15px;
+          align-items: flex-end;
+          flex-wrap: wrap;
+      }
+
+      .filtro-item {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+      }
+
+      .btn-pesquisar-consulta, .btn-consultar-tudo {
+          background-color: var(--primary-blue);
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          font-weight: bold;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 0.9rem;
+      }
+
+      .btn-consultar-tudo {
+          background-color: var(--secondary-color);
+      }
+
+      .btn-pesquisar-consulta:hover, .btn-consultar-tudo:hover { opacity: 0.9; }
+
+      /* MODAL DE DETALHES */
+      .modal-overlay {
+          display: none;
+          position: fixed;
+          top: 0; left: 0; width: 100%; height: 100%;
+          background-color: rgba(0, 0, 0, 0.5);
+          justify-content: center; align-items: center;
+          z-index: 100;
+      }
+      .modal-box {
+          background-color: var(--bg-card); 
+          padding: 20px; 
+          border-radius: 8px; 
+          width: 600px; 
+          max-width: 90%;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+          display: flex; 
+          flex-direction: column;
+          color: var(--text-primary);
+      }
+      .modal-header {
+          display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
+          border-bottom: 1px solid var(--border-color); padding-bottom: 10px;
+      }
+      .modal-header h3 { margin: 0; color: var(--primary-blue); font-size: 1.1rem; }
+      .btn-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-primary); }
+      .modal-body {
+          background-color: var(--bg-card); 
+          border: 1px dashed var(--border-color); 
+          padding: 15px;
+          font-family: 'Consolas', 'Courier New', monospace; 
+          font-size: 0.85rem; 
+          white-space: pre-wrap;
+          max-height: 400px; 
+          overflow-y: auto; 
+          border-radius: 4px; 
+          margin-bottom: 15px;
+          color: var(--text-primary);
+      }
+      .modal-footer { display: flex; justify-content: flex-end; gap: 10px; }
+
+      /* Estilo do botão de Tema */
+      .btn-darkmode button {
+          width: 100%;
+          padding: 10px;
+          border-radius: 6px;
+          border: 1px solid var(--border-color);
+          background-color: var(--bg-card);
+          color: var(--text-primary);
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: bold;
+          transition: all 0.2s ease;
+      }
+
+      .btn-darkmode button:hover {
+          opacity: 0.9;
+          transform: translateY(-1px);
+      }
+
+      /* FORÇA O FUNDO E A COR CORRETA NOS INPUTS NO MODO ESCURO */
+      body.dark-mode input[type="text"],
+      body.dark-mode input[type="date"],
+      body.dark-mode select,
+      body.dark-mode textarea {
+          background-color: var(--bg-input) !important;
+          color: var(--text-primary) !important;
+          border-color: var(--border-color) !important;
+      }
+
+      body.dark-mode input[type="text"]:focus,
+      body.dark-mode input[type="date"]:focus,
+      body.dark-mode select:focus,
+      body.dark-mode textarea:focus {
+          background-color: var(--bg-input) !important;
+          color: var(--text-primary) !important;
+          border-color: var(--primary-blue) !important;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- MENU LATERAL -->
+    <div class="sidebar">
+      <div>
+        <div class="menu-header">
+          <h4>MENU PRINCIPAL</h4>
+          <h2>BRBLog</h2>
+        </div>
+
+        <div class="menu-buttons">
+          <button class="btn-menu btn-blue" id="menuDashboard">
+            <span>📊</span> Painel de Atendimentos
+          </button>
+          <button class="btn-menu btn-blue" id="menuNovoAtendimento">
+            <span>➕</span> Novo Atendimento
+          </button>
+          <button class="btn-menu btn-blue" id="menuIaAssistente">
+            <span>🤖</span> IA de Apoio
+          </button>
+          <button class="btn-menu btn-blue" id="menuProcedimentos">
+            <span>📖</span> Procedimentos
+          </button>
+          <button class="btn-menu btn-blue" id="menuAtualizarLista">
+            <span>🔄</span> Atualizar Lista
+          </button>
+          <button class="btn-menu btn-blue" id="menuConsultarHistorico">
+            <span>🔍</span> Consultar Histórico
+          </button>
+          <button class="btn-menu btn-blue" id="menuLimparBase">
+            <span>🗑️</span> Limpar Base
+          </button>
+        </div>
+      </div>
+
+      <div class="footer-buttons">
+        <!-- Botão de Alternar Tema -->
+        <div class="btn-darkmode">
+          <button id="btnDarkMode" class="btn-menu" onclick="alternarDarkMode()" title="Alternar Modo Escuro">
+            🌙 Tema
+          </button>
+        </div>
+
+        <!-- BOTÃO SLIDE PARA MANTER TELA ATIVA -->
+        <div class="sidebar-toggle-item">
+          <span>☕ Manter Tela Ativa</span>
+          <label class="switch">
+            <input type="checkbox" id="chkManterTelaAtiva">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- BOTÃO DE FEEDBACK / BUG -->
+        <button class="btn-menu btn-blue" id="menuFeedback">
+          <span>💡</span> Feedback / Bug
+        </button>
+      </div>
+    </div>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <div class="main-content">
+
+      <!-- SEÇÃO 1: PAINEL / DASHBOARD -->
+      <div id="viewDashboard" class="view-section active">
+        <div class="dashboard-header">
+          <h3 id="lblContador">Atendimentos realizados hoje: 0</h3>
+          <span class="hint-text">💡 Dica: Dê um duplo clique em um atendimento para ver os detalhes | Atalhos: Alt+1 a Alt+5</span>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 80px;">Id</th>
+                <th style="width: 150px;">DataHora</th>
+                <th style="width: 140px;">Cpf</th>
+                <th>Nome</th>
+                <th style="width: 120px;">Bandeira</th>
+              </tr>
+            </thead>
+            <tbody id="tblCorpo">
+              <tr>
+                <td colspan="5" class="empty-row">Nenhum atendimento registrado hoje.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 2: NOVO ATENDIMENTO -->
+      <div id="viewFormulario" class="view-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <h3 style="margin:0; color:var(--primary-blue); font-size:1.1rem;">Tabulação de Atendimento</h3>
+            <span style="font-size: 0.8rem; background: #eaf2f8; color: #0052a3; padding: 4px 8px; border-radius: 4px; border: 1px solid #b8daff;">
+              ⚡ <b>Atalhos no formulário:</b> Alt+1 (Visa + PIDs) | Alt+2 (Mastercard + PIDs)
+            </span>
+          </div>
+
+          <!-- TIMER DE ACORDO DE PAUSAS -->
+          <div class="pause-timer-container">
+            <span class="pause-timer-label">⏸️ Pausas:</span>
+            <span class="pause-timer-display" id="lblTimerPausaDisplay">00:00</span>
+            <button class="pause-timer-btn" id="btnTimerPausaPlay" title="Iniciar/Retomar Pausa">▶</button>
+            <button class="pause-timer-btn" id="btnTimerPausaPause" title="Parar e Zerar">⏹</button>
+            <button class="pause-timer-btn pause-timer-btn-add" id="btnTimerPausaMaisTempo" title="Adicionar 50 segundos">+50s</button>
+          </div>
+        </div>
+
+        <div class="form-preview-grid">
+          <div class="form-column">
+            <fieldset>
+              <legend>👤 Dados Pessoais</legend>
+              <div class="input-group-row">
+                <div class="input-group" style="flex: 1;">
+                  <label for="txtCPF">CPF:</label>
+                  <div class="cpf-container">
+                    <input type="text" id="txtCPF" placeholder="000.000.000-00" maxlength="14">
+                    <button type="button" class="btn-mini" id="btnCopiarCpf" title="Copiar CPF">📋</button>
+                  </div>
+                  <span id="lblValidaCPF" class="validation-msg"></span>
+                </div>
+                <div class="input-group" style="flex: 1.2;">
+                  <label for="txtNome">Nome Completo:</label>
+                  <input type="text" id="txtNome" placeholder="Nome do cliente">
+                  <span class="validation-msg"></span>
+                </div>
+              </div>
+
+              <div class="input-group-row">
+                <div class="input-group" style="flex: 1;">
+                  <label for="cbxBandeira">Bandeira:</label>
+                  <select id="cbxBandeira">
+                    <option value="">Selecione...</option>
+                    <option value="Visa">Visa</option>
+                    <option value="Mastercard">Mastercard</option>
+                    <option value="Elo">Elo</option>
+                    <option value="Hipercard">Hipercard</option>
+                  </select>
+                </div>
+                <div class="input-group" style="flex: 1;">
+                  <label for="txtUltimos4">Últimos 4 Dígitos:</label>
+                  <input type="text" id="txtUltimos4" placeholder="0000" maxlength="4">
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label>Telefone igual Cadastro?</label>
+                <div class="radio-group">
+                  <label>
+                    <input type="radio" name="telIgual" id="rdbSim" checked=""> Sim
+                  </label>
+                  <label>
+                    <input type="radio" name="telIgual" id="rdbNao"> Não
+                  </label>
+                </div>
+              </div>
+
+              <div class="input-group-row">
+                <div class="input-group" style="flex: 1;">
+                  <label for="txtTelCadastro">Telefone de Cadastro:</label>
+                  <input type="text" id="txtTelCadastro" placeholder="(00) 00000-0000" maxlength="15">
+                </div>
+                <div class="input-group" style="flex: 1; display: none;" id="divTelContato">
+                  <label for="txtTelContato">Telefone de Contato:</label>
+                  <input type="text" id="txtTelContato" placeholder="(00) 00000-0000" maxlength="15">
+                </div>
+              </div>
+
+              <div class="alert-restricoes" id="boxRestricoes">
+                <strong>ATENÇÃO: Operações NÃO permitidas com telefone diferente:</strong>
+                <br>
+                <strong>• LIMITES:</strong>
+                <ul>
+                  <li>Overlimit</li>
+                  <li>Alteração de Limite</li>
+                  <li>Transferência de Limite</li>
+                  <li>Saber qual o limite do cartão</li>
+                </ul>
+                <strong>• CARTÕES:</strong>
+                <ul>
+                  <li>Adicionar um cartão</li>
+                  <li>Alterar status para 0-Ativo (Retirada de Bloqueio)</li>
+                </ul>
+                <strong>• DADOS CADASTRAIS:</strong>
+                <ul>
+                  <li>Alterar dados de cadastro</li>
+                  <li>Procurações</li>
+                  <li>Cadastro de Curatela</li>
+                  <li>Alterar Domicílio</li>
+                </ul>
+                <strong>• CARTEIRA DIGITAL:</strong>
+                <ul>
+                  <li>Ativar Carteira Digital</li>
+                </ul>
+                <strong>• FUNÇÕES:</strong>
+                <ul>
+                  <li>Habilitar compra internacional</li>
+                  <li>Ativar aviso viagem</li>
+                  <li>Ativar Contactless</li>
+                  <li>Contratar telesaque</li>
+                </ul>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>🔒 PIDs de Validação</legend>
+              <div class="input-group-row">
+                <div class="input-group" style="flex: 2;">
+                  <label for="cbxPid1">PID Opcional 1:</label>
+                  <select id="cbxPid1"></select>
+                </div>
+                <div class="input-group" style="flex: 1;">
+                  <label for="txtRespPid1">Resposta PID 1:</label>
+                  <input type="text" id="txtRespPid1" placeholder="Resposta">
+                </div>
+              </div>
+              <div class="input-group-row">
+                <div class="input-group" style="flex: 2;">
+                  <label for="cbxPid2">PID Opcional 2:</label>
+                  <select id="cbxPid2"></select>
+                </div>
+                <div class="input-group" style="flex: 1;">
+                  <label for="txtRespPid2">Resposta PID 2:</label>
+                  <input type="text" id="txtRespPid2" placeholder="Resposta">
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>📝 Dados do Atendimento</legend>
+              <div class="input-group">
+                <label for="txtMotivo">Motivo do Contato:</label>
+                <textarea id="txtMotivo" placeholder="Descreva o motivo..."></textarea>
+              </div>
+              <div class="input-group">
+                <label for="txtTratativa">Tratativa Realizada:</label>
+                <textarea id="txtTratativa" placeholder="Descreva a tratativa..."></textarea>
+              </div>
+            </fieldset>
+
+            <div class="btn-container">
+              <button class="btn-action btn-save" id="btnSalvar">💾 Salvar</button>
+              <button class="btn-action btn-copy-log" id="btnCopiarLogForm">📋 Copiar Log</button>
+              <button class="btn-action btn-clear" id="btnLimpar">🧹 Limpar</button>
+            </div>
+          </div>
+
+          <div class="preview-column">
+            <h3 style="margin-top:0; color:var(--primary-blue); font-size:1.0rem;">Pré-visualização da Tabulação</h3>
+            <div class="preview-box" id="previewBox"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 3: IA DE APOIO -->
+      <div id="viewIaAssistente" class="view-section">
+        <div class="ia-container">
+          <label style="font-weight: bold; margin-bottom: 8px; color: #404040;">Digite sua dúvida ou procedimento abaixo:</label>
+          <div class="ia-chat-box" id="iaChatBox"></div>
+          <div class="ia-input-row">
+            <input type="text" id="iaTxtPergunta" placeholder="Digite sua pergunta...">
+            <button class="btn-ia-enviar" id="iaBtnEnviar">Enviar 🚀</button>
+            <button class="btn-ia-aprender" id="iaBtnAprender" disabled style="opacity: 0.6; cursor: not-allowed;">➕ Ensinar IA</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 4: PROCEDIMENTOS -->
+      <div id="viewProcedimentos" class="view-section">
+        <div class="procedimentos-container">
+          <div class="procedimentos-header-title">PERGUNTAS FREQUENTES E PROCEDIMENTOS - BRBCARD</div>
+          <div class="procedimentos-divider">========================================================</div>
+          <div class="procedimentos-box" id="txtProcedimentosConteudo"></div>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 5: CONSULTAR HISTÓRICO -->
+      <div id="viewConsultarHistorico" class="view-section">
+        <div class="consulta-container">
+          <fieldset class="filtros-box">
+            <legend>🔍 Filtros de Pesquisa</legend>
+            <div class="filtros-grid">
+              <div class="filtro-item" style="width: 150px;">
+                <label for="filtroCpf">CPF:</label>
+                <input type="text" id="filtroCpf" placeholder="000.000.000-00">
+              </div>
+              <div class="filtro-item" style="flex: 1; min-width: 200px;">
+                <label for="filtroNome">Nome:</label>
+                <input type="text" id="filtroNome" placeholder="Nome do cliente">
+              </div>
+              <div class="filtro-item" style="width: 135px;">
+                <label for="filtroDataInicio">Data Início:</label>
+                <input type="date" id="filtroDataInicio">
+              </div>
+              <div class="filtro-item" style="width: 135px;">
+                <label for="filtroDataFim">Data Fim:</label>
+                <input type="date" id="filtroDataFim">
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn-pesquisar-consulta" id="btnFiltrarHistorico">🔍 Pesquisar</button>
+                <button class="btn-consultar-tudo" id="btnLimparFiltroHistorico">🔄 Consultar Tudo</button>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 80px;">Id</th>
+                  <th style="width: 150px;">DataHora</th>
+                  <th style="width: 140px;">Cpf</th>
+                  <th>Nome</th>
+                  <th style="width: 120px;">Bandeira</th>
+                </tr>
+              </thead>
+              <tbody id="tblConsultaCorpo">
+                <tr>
+                  <td colspan="5" class="empty-row">Nenhum atendimento encontrado.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MODAL DE DETALHES -->
+    <div class="modal-overlay" id="modalDetalhes">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3>Detalhes do Atendimento</h3>
+          <button class="btn-close" id="btnCloseModal">✕</button>
+        </div>
+        <div class="modal-body" id="modalConteudoLog"></div>
+        <div class="modal-footer">
+          <button class="btn-action btn-copy-log" id="btnModalCopiar">📋 Copiar Log</button>
+          <button class="btn-action btn-clear" id="btnModalFechar">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE FEEDBACK, SUGESTÕES E BUGS -->
+    <div class="modal-overlay" id="modalFeedback" style="display: none;">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3>BRBLog - Feedback, Sugestões e Bugs</h3>
+          <button class="btn-close" id="btnCloseFeedback">✕</button>
+        </div>
+        <div class="modal-body">
+          <p style="margin-bottom: 15px; font-size: 0.95rem; color: #333;">Envie suas sugestões, melhorias ou reporte bugs por e-mail (Zimbra):</p>
+
+          <div class="input-group" style="margin-bottom: 15px;">
+            <label for="txtEmailFeedback">E-mail Corporativo:</label>
+            <div class="cpf-container" style="display: flex; gap: 8px; margin-top: 5px;">
+              <input type="text" id="txtEmailFeedback" value="jackson.andrade@concentrix.com" readonly="" style="flex: 1;">
+              <button type="button" class="btn-action btn-copy-log" id="btnCopiarEmail" style="padding: 6px 12px; white-space: nowrap;">📋 Copiar E-mail</button>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="txtContaProjeto">Conta / Projeto:</label>
+            <input type="text" id="txtContaProjeto" value="BRB Azul" readonly="" style="margin-top: 5px;">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-action btn-clear" id="btnFecharFeedback">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // --- FUNÇÃO DE SEGURANÇA PARA ELEMENTOS ---
+      function segurarEvento(id, evento, callback) {
+          const el = document.getElementById(id);
+          if (el) {
+              el.addEventListener(evento, callback);
+          }
+      }
+
+      // --- NAVEGAÇÃO ENTRE TELAS ---
+      const viewDashboard = document.getElementById('viewDashboard');
+      const viewFormulario = document.getElementById('viewFormulario');
+      const viewIaAssistente = document.getElementById('viewIaAssistente');
+      const viewProcedimentos = document.getElementById('viewProcedimentos');
+      const viewConsultarHistorico = document.getElementById('viewConsultarHistorico');
+
+      function ocultarTodasViews() {
+          if (viewDashboard) viewDashboard.classList.remove('active');
+          if (viewFormulario) viewFormulario.classList.remove('active');
+          if (viewIaAssistente) viewIaAssistente.classList.remove('active');
+          if (viewProcedimentos) viewProcedimentos.classList.remove('active');
+          if (viewConsultarHistorico) viewConsultarHistorico.classList.remove('active');
+      }
+
+      segurarEvento('menuDashboard', 'click', function() {
+          ocultarTodasViews();
+          if (viewDashboard) viewDashboard.classList.add('active');
+          carregarAtendimentosHoje();
+      });
+
+      segurarEvento('menuNovoAtendimento', 'click', function() {
+          ocultarTodasViews();
+          if (viewFormulario) viewFormulario.classList.add('active');
+          atualizarPreVisualizacao();
+          const txtCpf = document.getElementById('txtCPF');
+          if (txtCpf) txtCpf.focus();
+      });
+
+      segurarEvento('menuIaAssistente', 'click', function() {
+          ocultarTodasViews();
+          if (viewIaAssistente) viewIaAssistente.classList.add('active');
+          const txtPerg = document.getElementById('iaTxtPergunta');
+          if (txtPerg) txtPerg.focus();
+      });
+
+      segurarEvento('menuProcedimentos', 'click', function() {
+          ocultarTodasViews();
+          if (viewProcedimentos) viewProcedimentos.classList.add('active');
+          carregarProcedimentos();
+      });
+
+      segurarEvento('menuConsultarHistorico', 'click', function() {
+          ocultarTodasViews();
+          if (viewConsultarHistorico) viewConsultarHistorico.classList.add('active');
+          carregarTodoHistorico();
+      });
+
+      // --- TIMER DE PAUSA (COM CORES E +50s AJUSTADOS) ---
+      let pausaSegundos = 0;
+      let pausaInterval = null;
+      let pausaRodando = false;
+
+      function atualizarDisplayPausa() {
+          const pausaDisplay = document.getElementById('lblTimerPausaDisplay');
+          const pausaContainer = document.querySelector('.pause-timer-container');
+          if (!pausaDisplay) return;
+
+          const m = Math.floor(pausaSegundos / 60).toString().padStart(2, '0');
+          const s = (pausaSegundos % 60).toString().padStart(2, '0');
+          pausaDisplay.textContent = m + ':' + s;
+
+          if (pausaContainer) {
+              if (pausaSegundos >= 55) {
+                  pausaContainer.style.backgroundColor = '#f1b0b7';
+                  pausaContainer.style.borderColor = '#dc3545';
+                  pausaDisplay.style.color = '#58151c';
+              } else if (pausaSegundos >= 45) {
+                  pausaContainer.style.backgroundColor = '#f8d7da';
+                  pausaContainer.style.borderColor = '#f5c6cb';
+                  pausaDisplay.style.color = '#721c24';
+              } else if (pausaSegundos >= 30) {
+                  pausaContainer.style.backgroundColor = '#fff3cd';
+                  pausaContainer.style.borderColor = '#ffeeba';
+                  pausaDisplay.style.color = '#856404';
+              } else {
+                  pausaContainer.style.backgroundColor = '#d4edda';
+                  pausaContainer.style.borderColor = '#c3e6cb';
+                  pausaDisplay.style.color = '#155724';
+              }
+          }
+      }
+
+      segurarEvento('btnTimerPausaPlay', 'click', function() {
+          const btnPlay = document.getElementById('btnTimerPausaPlay');
+          if (!pausaRodando) {
+              pausaRodando = true;
+              if (btnPlay) btnPlay.textContent = '⏸';
+              pausaInterval = setInterval(function() {
+                  pausaSegundos++;
+                  atualizarDisplayPausa();
+              }, 1000);
+          } else {
+              pausaRodando = false;
+              if (btnPlay) btnPlay.textContent = '▶';
+              clearInterval(pausaInterval);
+          }
+      });
+
+      segurarEvento('btnTimerPausaPause', 'click', function() {
+          pausaRodando = false;
+          clearInterval(pausaInterval);
+          const btnPlay = document.getElementById('btnTimerPausaPlay');
+          if (btnPlay) btnPlay.textContent = '▶';
+          pausaSegundos = 0;
+          atualizarDisplayPausa();
+      });
+
+      segurarEvento('btnTimerPausaMaisTempo', 'click', function() {
+          pausaSegundos = 0;
+          pausaRodando = true;
+          
+          const btnPlay = document.getElementById('btnTimerPausaPlay');
+          if (btnPlay) btnPlay.textContent = '⏸';
+          
+          clearInterval(pausaInterval);
+          pausaInterval = setInterval(function() {
+              pausaSegundos++;
+              atualizarDisplayPausa();
+          }, 1000);
+          
+          atualizarDisplayPausa();
+      });
+
+      // --- MANTER TELA ATIVA ---
+      let wakeLock = null;
+      segurarEvento('chkManterTelaAtiva', 'change', async function(e) {
+          const isChecked = e.target.checked;
+          try {
+              if (isChecked && 'wakeLock' in navigator) {
+                  wakeLock = await navigator.wakeLock.request('screen');
+                  alert('☕ Prevenção de standby ativada.');
+              } else if (wakeLock) {
+                  await wakeLock.release();
+                  wakeLock = null;
+                  alert('⚡ Prevenção de standby desativada.');
+              }
+          } catch (err) {
+              console.error(err.name + ', ' + err.message);
+              alert('Não foi possível ativar a prevenção de standby neste navegador.');
+              e.target.checked = false;
+          }
+      });
+
+      // --- ATALHOS ---
+      function aplicarAtalhoFormulario(bandeiraDesejada) {
+          if (viewFormulario && !viewFormulario.classList.contains('active')) {
+              const menuNovo = document.getElementById('menuNovoAtendimento');
+              if (menuNovo) menuNovo.click();
+          }
+
+          const cbBandeira = document.getElementById('cbxBandeira');
+          if (cbBandeira) cbBandeira.value = bandeiraDesejada;
+
+          const cb1 = document.getElementById('cbxPid1');
+          const cb2 = document.getElementById('cbxPid2');
+
+          if (cb1) {
+              cb1.value = "Data do Vencimento da Fatura";
+              handlePidChange(1);
+          }
+          if (cb2) {
+              cb2.value = "Possui um adicional? (Sim ou Não)";
+              handlePidChange(2);
+          }
+
+          atualizarPreVisualizacao();
+          const txtCpf = document.getElementById('txtCPF');
+          if (txtCpf) txtCpf.focus();
+      }
+
+      window.addEventListener('keydown', function(e) {
+          if (e.altKey) {
+              if (e.key === '1') {
+                  e.preventDefault();
+                  aplicarAtalhoFormulario('Visa');
+              } else if (e.key === '2') {
+                  e.preventDefault();
+                  aplicarAtalhoFormulario('Mastercard');
+              }
+          }
+      });
+
+      // --- PROCEDIMENTOS E MANUAL COMPLETO ---
+      const procedimentosTextoOficial = 
+          'Manual de Procedimentos e Diretrizes BRB\n' +
+          '==================================================\n\n' +
+          'BRB Card APP\n' +
+          '1. COMPRAS REALIZADAS\n' +
+          '• Como acompanhar: Acesse o aplicativo BRBCARD em: Lançamentos > Histórico de Lançamentos.\n' +
+          '• Utilidade: Acompanhe as suas compras, faça o planejamento financeiro e verifique o fechamento da fatura.\n\n' +
+          '2. AUMENTO DE LIMITE\n' +
+          '• Procedimento: Acesse Aumentar limite > Solicitações > Aumento de limite > Ativar botão autorizando a ação.\n' +
+          '• Nota: Sujeito a análise.\n\n' +
+          '3. SOLICITAR 2ª VIA DE FATURA\n' +
+          '• Procedimento: Acesse Fatura > Boleto > Gerar Boleto e escolha a forma de executar a ação.\n\n' +
+          '4. PARCELAMENTO DE FATURA\n' +
+          '• Procedimento: Acesse Solicitações > Renegociação / Parcelamento > Selecione a melhor condição > Estou de Acordo > Contratar.\n\n' +
+          '5. ADESÃO A FATURA DIGITAL\n' +
+          '• Procedimento: Acesse Solicitações > Adesão a Fatura Digital > Contratar.\n\n' +
+          '6. ALTERAR A DATA DE VENCIMENTO\n' +
+          '• Prazos Visa: Vencimentos nos dias 1, 5, 8, 17, 20 e 25.\n' +
+          '• Prazos MasterCard: Vencimentos nos dias 1, 5, 17, 20 e 25.\n' +
+          '• Procedimento: Acesse Faturas > Configurações > Alterar Vencimento.\n\n' +
+          '7. AVISO DE VIAGEM\n' +
+          '• Importância: Evita que as compras sejam negadas por suspeita de uso indevido no exterior.\n' +
+          '• Procedimento: Acesse Solicitações > Aviso de Viagem. Para novos destinos, informe os dados da viagem e clique em Continuar. Você receberá um aviso de sucesso com o registro do protocolo.\n\n' +
+          '8. CONTESTAÇÃO DE COMPRAS\n' +
+          '• Situações: Compra aprovada não reconhecida ou problemas com o estabelecimento.\n' +
+          '• Procedimento: Acesse Solicitações > Contestação de Compras > Selecione o Cartão > Selecione a(s) compra(s) > Prosseguir > Aceite os termos > Finalizar.\n\n' +
+          '9. TROCA DE PRODUTO\n' +
+          '• Procedimento: Acesse Meus Cartões > Solicitações > Troca de Produto e conheça mais sobre os produtos (Sujeito a análise).\n\n' +
+          '10. ADESÃO AO PACOTE SMS\n' +
+          '• Descrição: Relatório instantâneo de movimentações acima de R$ 50,00 na função crédito.\n' +
+          '• Custo: R$ 3,00 por usuário/mês (titular e dependentes pagam R$ 3,00 cada).\n' +
+          '• Procedimento: Acesse Solicitações > Troca de Produto > Selecione o cartão > Aderir.\n\n' +
+          '11. DÉBITO AUTOMÁTICO\n' +
+          '• Descrição: Faturas debitadas automaticamente na conta corrente BRB no dia do vencimento.\n' +
+          '• Procedimento: Acesse Solicitações > Débito em conta > Confirmar dados da Conta > Confirmar (Sujeito a disponibilidade de saldo).\n\n' +
+          '==================================================\n' +
+          'DIRETRIZES DE SEGURANÇA E PID\n' +
+          '==================================================\n' +
+          '• Dados Obrigatórios de PID: CPF do Titular, Nome Completo, Bandeira do Cartão e Últimos 4 Dígitos.\n' +
+          '⚠️ Atenção: A omissão ou erro em QUALQUER um dos itens acima encerra o atendimento imediatamente!\n' +
+          '• Regra de Opcionais: O cliente pode errar no máximo 1 dado opcional. Errar 2 ou mais exige encerramento sumário.\n' +
+          '• Meta TMA: 7:15 a 7:45 minutos.\n\n' +
+          '==================================================\n' +
+          'CÓDIGOS DE BLOQUEIO OPERACIONAIS\n' +
+          '==================================================\n' +
+          '• Cód. 2 (Bloqueio de Fábrica): Cartão novo. Orientar 1ª compra com chip e senha após PID.\n' +
+          '• Cód. 8 (Cobrança CRELIQ): Registro associado a acordos CRELIQ.\n' +
+          '• Cód. 9 (Contrato em Perda): Atraso superior a 365+ dias.\n' +
+          '• Cód. 15 (Acordo CRELIQ Ativo): Acordo em andamento.\n' +
+          '• Cód. 21 (Escritório Externo): Débito em assessoria terceirizada.\n' +
+          '• Cód. 26 (Acordo Perda): Regra de sinistro/acordo de perda.\n' +
+          '• Cód. 27 (Capital de Giro): Uso em maquininha de mesmo CPF (Prazo: 5 dias).\n' +
+          '• Cód. 30 (Ação Judicial / Restrição): Restrições contratuais ou pendência judicial.\n' +
+          '• Cód. 32 (Senha Incorreta Excedida): Excesso de tentativas de senha.\n' +
+          '• Cód. 33 (Bloqueio Prevenção): Preventivo do N2 por suspeita de fraude.\n' +
+          '• Cód. 90 (Renegociação Ativa): Parcelamento ou renegociação em andamento.\n' +
+          '• Cód. 92 (Arrasto de Bloqueio): Bloqueio em cascata por inadimplência.\n' +
+          '• Cód. 93 (Stop Accrual / Liquidação): Interrupção de encargos.\n' +
+          '• Cód. 94 (HCO Histórico): Registro de renegociação histórica.\n' +
+          '• Cód. 111 (Cancelamento Tombado): Acordo registrado no histórico.\n\n' +
+          '==================================================\n' +
+          'REGRAS DE PARCELAMENTO E SERVIÇOS\n' +
+          '==================================================\n' +
+          '• Parcelamento no App: Faturas fechadas, a cada 4 meses (120 dias), em até 18x (1 Entrada + 17 Parcelas).\n' +
+          '• Taxa Overlimit: Cobrada se a compra exceder 10% ou mais o limite (R$ 25,00 por ocorrência).\n' +
+          '• TAG Veloe: Adesão R$ 20,00 | Mensalidade R$ 9,90 | Até 4 veículos.\n' +
+          '• Transação Negada (Antigo Falcon): PROIBIDO falar o termo "Falcon". Orientar responder SMS 28595.';
+
+      function carregarProcedimentos() {
+          const el = document.getElementById('txtProcedimentosConteudo');
+          if (el) el.textContent = procedimentosTextoOficial;
+      }
+
+      // --- CONSULTAR HISTÓRICO ---
+      function carregarTodoHistorico() {
+          const atendimentos = JSON.parse(localStorage.getItem('brblog_atendimentos') || '[]');
+          
+          const fCpf = document.getElementById('filtroCpf');
+          const fNome = document.getElementById('filtroNome');
+          const fIni = document.getElementById('filtroDataInicio');
+          const fFim = document.getElementById('filtroDataFim');
+
+          if (fCpf) fCpf.value = '';
+          if (fNome) fNome.value = '';
+          if (fIni) fIni.value = '';
+          if (fFim) fFim.value = '';
+
+          renderizarTabelaHistorico(atendimentos.slice().reverse());
+      }
+
+      function renderizarTabelaHistorico(lista) {
+          const tbody = document.getElementById('tblConsultaCorpo');
+          if (!tbody) return;
+          tbody.innerHTML = '';
+
+          if (!lista || lista.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Nenhum atendimento encontrado.</td></tr>';
+              return;
+          }
+
+          lista.forEach(function(item, index) {
+              const tr = document.createElement('tr');
+              tr.innerHTML = '<td>' + (item.id || (index + 1)) + '</td>' +
+                  '<td>' + (item.dataHora || '') + '</td>' +
+                  '<td>' + (item.cpf || '') + '</td>' +
+                  '<td>' + (item.nome || '') + '</td>' +
+                  '<td>' + (item.bandeira || '') + '</td>';
+              tr.addEventListener('dblclick', function() {
+                  abrirDetalhesAtendimento(item);
+              });
+              tbody.appendChild(tr);
+          });
+      }
+
+      segurarEvento('btnFiltrarHistorico', 'click', function() {
+          const fCpf = document.getElementById('filtroCpf');
+          const fNome = document.getElementById('filtroNome');
+          const fIni = document.getElementById('filtroDataInicio');
+          const fFim = document.getElementById('filtroDataFim');
+
+          const cpfFiltro = fCpf ? fCpf.value.replace(/\D/g, '') : '';
+          const nomeFiltro = fNome ? fNome.value.toLowerCase().trim() : '';
+          const dataIni = fIni ? fIni.value : '';
+          const dataFim = fFim ? fFim.value : '';
+
+          const atendimentos = JSON.parse(localStorage.getItem('brblog_atendimentos') || '[]');
+
+          const filtrados = atendimentos.filter(function(item) {
+              let matchCpf = true;
+              if (cpfFiltro) {
+                  const cpfItem = (item.cpf || '').replace(/\D/g, '');
+                  matchCpf = cpfItem.includes(cpfFiltro);
+              }
+
+              let matchNome = true;
+              if (nomeFiltro) {
+                  const nomeItem = (item.nome || '').toLowerCase();
+                  matchNome = nomeItem.includes(nomeFiltro);
+              }
+
+              let matchData = true;
+              if ((dataIni || dataFim) && item.dataHora) {
+                  const partesData = item.dataHora.split(' ')[0].split('/');
+                  if (partesData.length === 3) {
+                      const dia = partesData[0].padStart(2, '0');
+                      const mes = partesData[1].padStart(2, '0');
+                      const ano = partesData[2];
+                      const dataItemIso = ano + '-' + mes + '-' + dia;
+
+                      if (dataIni && dataItemIso < dataIni) matchData = false;
+                      if (dataFim && dataItemIso > dataFim) matchData = false;
+                  }
+              }
+
+              return matchCpf && matchNome && matchData;
+          });
+
+          renderizarTabelaHistorico(filtrados.slice().reverse());
+      });
+
+      segurarEvento('btnLimparFiltroHistorico', 'click', function() {
+          carregarTodoHistorico();
+      });
+
+      // --- IA DE APOIO ---
+      const baseConhecimentoPadrao = [
+          "Quais são os dados de Validação de Segurança (PID) obrigatórios?|• CPF do Titular\n• Nome Completo\n• Bandeira do Cartão\n• Últimos 4 Dígitos do Cartão\n\n⚠️ Atenção: A omissão ou erro em QUALQUER um dos itens acima encerra o atendimento imediatamente!",
+          "Quais são as regras para os dados opcionais de PID?|• Tolerância: O cliente pode errar no máximo 1 (um) dado opcional.\n• Encerramento: Errar 2 ou mais dados opcionais exige encerramento sumário por segurança.",
+          "Qual é a meta de Tempo Médio de Atendimento (TMA)?|• Meta Oficial: 7:15 a 7:45 minutos.",
+          "O que significa o Código 2 (Bloqueio de Fábrica)?|• Cód. 2 - Bloqueio de Fábrica\n• Descrição: Cartão novo.\n• Orientação: Orientar o cliente a realizar a 1ª compra usando CHIP E SENHA após concluir a Validação de Segurança (PID).",
+          "O que significa o Código 8 (Cobrança CRELIQ)?|• Cód. 8 - Cobrança CRELIQ\n• Descrição: Registro de cobrança associado a acordos ou procedimentos do setor CRELIQ.",
+          "O que significa o Código 9 (Contrato em Perda)?|• Cód. 9 - Contrato em Perda\n• Descrição: Contrato com Perda (superou prazos CRELIQ: 1-92d e 93-364d). Atraso de 365+ dias.",
+          "O que significa o Código 15 (Acordo CRELIQ Ativo)?|• Cód. 15 - Acordo CRELIQ Ativo\n• Descrição: Acordo CRELIQ em andamento vinculado ao contrato do cliente.",
+          "O que significa o Código 21 (Escritório Externo)?|• Cód. 21 - Escritório Externo\n• Descrição: Débito em negociação ativa com assessoria/escritório de cobrança terceirizado.",
+          "O que significa o Código 26 (Acordo Perda)?|• Cód. 26 - Acordo Perda\n• Descrição: Bloqueio classificado por regra de sinistro/acordo de perda.",
+          "O que significa o Código 27 (Capital de Giro)?|• Cód. 27 - Capital de Giro\n• Descrição: Uso em maquininha de mesmo CPF do titular do cartão.\n• Prazo de acompanhamento: 5 dias.",
+          "O que significa o Código 30 (Ação Judicial / Restrição)?|• Cód. 30 - Ação Judicial / Restrição\n• Descrição: Bloqueio vinculado a restrições contratuais específicas ou pendência judicial.",
+          "O que significa o Código 32 (Senha Incorreta Excedida)?|• Cód. 32 - Senha Incorreta Excedida\n• Descrição: Bloqueio por excesso de tentativas de senha incorreta na maquininha ou caixa eletrónico.",
+          "O que significa o Código 33 (Bloqueio Prevenção)?|• Cód. 33 - Bloqueio Prevenção\n• Descrição: Bloqueio preventivo realizado pelo N2 para casos onde há suspeita de fraude na conta.",
+          "O que significa o Código 90 (Renegociação Ativa)?|• Cód. 90 - Renegociação Ativa\n• Descrição: Contrato possui renegociação ou parcelamento ativo em andamento no sistema.",
+          "O que significa o Código 92 (Arrasto de Bloqueio)?|• Cód. 92 - Arrasto de Bloqueio\n• Descrição: Bloqueio aplicado em cascata em outros cartões/contas por inadimplência vinculada.",
+          "O que significa o Código 93 (Stop Accrual / Liquidação)?|• Cód. 93 - Stop Accrual (Liquidação)\n• Descrição: Interrupção de encargos em crédito em liquidação. Congela encargos e envia à Cobrança.",
+          "O que significa o Código 94 (HCO Histórico)?|• Cód. 94 - HCO (Histórico)\n• Descrição: Registro de renegociação histórica (HCO) mantido no sistema.",
+          "O que significa o Código 111 (Cancelamento Tombado)?|• Cód. 111 - Cancelamento Tombado\n• Descrição: Cancelamento de acordo registrado no histórico tombado do cliente.",
+          "Como fazer o Parcelamento de Fatura pelo aplicativo?|• Procedimento no App: Acesse Solicitações > Renegociação / Parcelamento > Selecione a melhor condição > Estou de Acordo > Contratar.\n• Regras: Disponível para faturas fechadas. Frequência de refinanciamento permitida a cada 4 meses (120 dias), em até 18x (1 Entrada + 17 Parcelas).",
+          "Quais são as regras de Parcelamento e Refinanciamento de Fatura?|• Frequência: Permitido a cada 4 meses (120 dias).\n• Condições: Até 18x (1 Entrada + 17 Parcelas).\n• Antecipação: Até 2x por semestre no Portal de Clientes (CPF -> Fatura Refinanciamento).",
+          "Como funciona a Taxa de Overlimit?|• Condição: Cobrada quando a compra excede em 10% ou mais o limite total do cartão.\n• Custo: Tarifa fixa de R$ 25,00 por ocorrência.",
+          "Quais são os custos e regras da TAG Veloe?|• Adesão: R$ 20,00\n• Mensalidade: R$ 9,90\n• Frota: Permite cadastrar e gerenciar até 4 veículos por conta via Telebanco ou Autoatendimento\n• Faturamento: Passagens de pedágio e estacionamentos lançados unificadamente na fatura do cartão.",
+          "Quais são as regras de Sinalização na Fatura?|• Sinalização (+): Lançamentos de custos, compras, débitos e encargos.\n• Sinalização (-): Lançamentos de estorno, pagamentos e créditos.",
+          "Como diferenciar as senhas de Cartões Múltiplos para Puro-Crédito|• Cartões Múltiplos: A senha da função débito é exatamente a mesma senha da função crédito.",
+          "Qual a conduta para Transação Negada por Segurança (Antigo Falcon)?|🚫 PROIBIDO: O atendente de Nível 1 NUNCA deve falar o termo 'Falcon' para o cliente.\n• Conduta: Orientar a responder ao SMS de verificação recebido (número 28595) ou direcionar para o Chat/WhatsApp.",
+          "Quais são os Canais Oficiais de Atendimento e o Contexto Institucional do BRB?|• Instituição: Banco BRB criado em 1964 como Agente do Governo, sociedade de economia mista e capital aberto.\n• Central Telefônica: 0800 880 4004 | Capitais: 4003-4004\n• E-mail de Suporte: atendimento@brbcard.com.br\n• SMS Oficial de Alertas: 28595.",
+          "Connect BRB Conect Cartão Digital|• Categoria: Linha Digital / Aprovação rápida\n• Bandeira: Visa / Mastercard\n• Limite de Crédito: Mínimo de R$ 300,00 a Máximo de R$ 3.000,00.",
+          "Quais são os cartões da linha Social / Governo?|• Prato Cheio: BRB Social (Rede Fechada). Sem crédito. Carga fixa mensal (ex: R$ 250,00).\n• DF Social / Auxílio Gás: BRB Social (Rede Fechada). Sem crédito. Benefício social de transferência.\n• Cartão Creche: BRB Social (Rede Fechada). Sem crédito. Saldo específico repassado pelo DF.",
+          "Quais são os cartões de entrada e básicos do BRB?|• BRB Nacional: Linha Básico/Entrada | Bandeira: Visa ou Mastercard | Limite: Mínimo de R$ 500,00 a Máximo de R$ 2.000,00.\n• BRB Internacional: Linha Básico/Entrada | Bandeira: Visa ou Mastercard | Limite: Mínimo de R$ 800,00 a Máximo de R$ 3.000,00.",
+          "Quais são os detalhes do Cartão BRB Gold?|• Categoria: Linha Entrada Premium\n• Bandeira: Visa ou Mastercard\n• Limite de Crédito: Mínimo de R$ 3.000,00 a Máximo de R$ 10.000,00.",
+          "Quais são os detalhes do Cartão BRB Platinum?|• Categoria: Linha Intermediária\n• Bandeira: Visa ou Mastercard\n• Limite de Crédito: Mínimo de R$ 5.000,00 a Máximo de R$ 20.000,00.",
+          "Quais são os cartões de alta renda e ultraexclusivos do BRB?|• BRB Mastercard Black: Linha Alta Renda | Bandeira: Mastercard | Limite: Mínimo de R$ 15.000,00 até Ilimitado.\n• BRB Visa Infinite: Linha Alta Renda | Bandeira: Visa | Limite: Mínimo de R$ 15.000,00 até Ilimitado.\n• BRB Visa DUX: Linha Ultraexclusivo (Cartão de Metal) | Bandeira: Visa | Limite: Mínimo de R$ 80.000,00 até Ilimitado.",
+          "Quais são os detalhes do BRB Flamengo Internacional?|• Categoria: Linha Co-Branded Flamengo\n• Bandeira: Visa ou Mastercard\n• Limite de Crédito: Mínimo de R$ 800,00 a Máximo de R$ 3.000,00.",
+          "Quais são os detalhes do BRB Flamengo Gold?|• Categoria: Linha Co-Branded Flamengo\n• Bandeira: Visa ou Mastercard\n• Limite de Crédito: Mínimo de R$ 3.000,00 a Máximo de R$ 10.000,00.",
+          "Quais são os detalhes do BRB Flamengo Platinum?|• Categoria: Linha Co-Branded Flamengo\n• Bandeira: Visa ou Mastercard\n• Limite de Crédito: Mínimo de R$ 5.000,00 a Máximo de R$ 20.000,00.",
+          "Quais são os detalhes do BRB Flamengo Mastercard Black?|• Categoria: Linha Co-Branded Flamengo / Alta Renda\n• Bandeira: Mastercard\n• Limite de Crédito: Mínimo de R$ 15.000,00 até Ilimitado.",
+          "Quais são os detalhes do BRB Flamengo DUX Visa?|• Categoria: Linha Co-Branded Flamengo / Ultraexclusivo (Cartão de Metal)\n• Bandeira: Visa\n• Limite de Crédito: Mínimo de R$ 80.000,00 até Ilimitado.",
+          "Quais são os detalhes do Cartão BRB Mulher?|• Categoria: Linha Institucional / Temática\n• Bandeira: Visa\n• Variações / Subcategorias: Gold ou Platinum\n• Limite de Crédito: Mínimo de R$ 3.000,00 a Máximo de R$ 20.000,00.",
+          "Quais são os detalhes do Cartão HCB (Servidores)?|• Categoria: Linha Servidores / Históricos\n• Bandeira: Visa ou Mastercard\n• Limite de Crédito / Margem: Mínimo de R$ 1.000,00 a Máximo de R$ 15.000,00 (conforme margem consignável/servidor).",
+          "Quais são os benefícios, anuidade e regras do Cartão BRB Visa DUX?|• Perfil: Cartão de Metal ultraexclusivo. Exige convite ou R$ 500 mil em investimentos.\n• Limite Inicial: Mínimo de R$ 80.000,00 até Ilimitado.\n• Pontuação: 5,0 pts/US$ (Nacional) | 7,0 pts/US$ (Internacional).\n• Anuidade: Isento nos primeiros 3 meses. Após, 12x R$ 400,00 (Total R$ 4.800,00).\n• Isenção de Anuidade por Fatura: 50% desc. para gastos > R$ 25 mil/mês | 100% desc. para gastos > R$ 50 mil/mês.\n• Salas VIP: Acessos ilimitados (titular/adicionais) + 3 convidados por visita.",
+          "Quais são as anuidades dos cartões Infinite e Black?|• Condição Geral: Isenção nos 3 primeiros meses.\n• BRB Visa Infinite: Após, 12x R$ 91,00.\n• Mastercard Black: Após, 12x R$ 110,00.\n• Limites: Mínimo de R$ 15.000,00 até Ilimitado (conforme análise).",
+          "Quais são as regras de acesso e diferenciais da Sala BRB VIP Club (BSB) e LoungeKey?|• Diferencial BSB: Única sala VIP do Brasil com raio-X próprio para embarque direto aos portões e estacionamento exclusivo no Aeroporto JK.\n• Regra Spend (LoungeKey / VAC): Exige gasto mínimo mensal qualificado na fatura (ex: R$ 5 mil titular / R$ 3 mil adicional). Sem o gasto, há cobrança Walk-in na fatura.\n• Acessos Infinite/Black: Cota de 3 acessos anuais (convidados cobrados). Acesso VAC via QR Code no app.\n• Isenção por Investimentos: Isenção total com R$ 250 mil em investimentos BRB + Open Finance + Chave Pix ativa.",
+          "O que fazer no Erro Ops Não foi possível ao tentar parcelamento no App?|• Causa: O cliente efetuou um refinanciamento/parcelamento nos últimos 4 meses (120 dias), o que bloqueia temporariamente a contratação pelo aplicativo.\n• Conduta: Encaminhar o caso ao Backoffice N2 (Nível 2 de Atendimento) via canais DDC/DED/DEC.",
+          "Como alterar/consultar a senha do cartão BRB Card - Puro Crédito?|• Para alterar a senha do cartão Puro Crédito, deve orientar o cliente a alterar a senha via Terminal do Banco 24Hrs ou na agência. Pode visualizar também a senha no aplicativo BRB Card (Ícone Azul escuro), no seguinte caminho: Clicar na foto de Perfil --> Serviços --> Minhas Senhas --> Recuperar Senha --> Realizar FaceID.",
+          "Como alterar/consultar a senha do cartão BRB Card - Múltiplo?|• Para alterar a senha do cartão Múltiplo, deve orientar o cliente a alterar a senha via Terminal do Banco 24Hrs ou na agência. Pode visualizar também a senha no aplicativo BRB Mobile (Ícone Preto), no seguinte caminho: Clicar na foto de Perfil --> Serviços --> Minhas Senhas --> Recuperar Senha --> Realizar FaceID."
+      ];
+
+      function inicializarBaseConhecimento() {
+          localStorage.setItem('brblog_base_conhecimento', JSON.stringify(baseConhecimentoPadrao));
+      }
+
+      function adicionarMensagemIaChat(remetente, mensagem) {
+          const chatBox = document.getElementById('iaChatBox');
+          if (!chatBox) return;
+          
+          const spanRemetente = document.createElement('div');
+          spanRemetente.style.fontWeight = 'bold';
+          spanRemetente.style.marginBottom = '2px';
+
+          if (remetente.indexOf("IA") !== -1) {
+              spanRemetente.style.color = '#38bdf8';
+              spanRemetente.textContent = remetente + ':';
+          } else {
+              spanRemetente.style.color = '#4ade80';
+              spanRemetente.textContent = remetente + ':';
+          }
+
+          const divMsg = document.createElement('div');
+          divMsg.style.color = 'var(--text-primary)';
+          divMsg.style.marginBottom = '12px';
+          divMsg.style.whiteSpace = 'pre-wrap';
+          divMsg.textContent = mensagem;
+
+          chatBox.appendChild(spanRemetente);
+          chatBox.appendChild(divMsg);
+          chatBox.scrollTop = chatBox.scrollHeight;
+      }
+
+      function carregarBoasVindasIa() {
+          inicializarBaseConhecimento();
+          const chatBox = document.getElementById('iaChatBox');
+          if (chatBox) {
+              chatBox.innerHTML = '';
+              adicionarMensagemIaChat("🤖 Assistente IA", "Olá! Estou pronto para auxiliar nos atendimentos. Digite sua dúvida sobre PID, senhas, cartões bloqueados ou procedimentos.");
+          }
+      }
+
+      function normalizarTexto(texto) {
+          if (!texto) return '';
+          return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      }
+
+      function buscarRespostaNaBase(termoBusca) {
+          if (typeof baseConhecimentoPadrao !== 'undefined') {
+              localStorage.setItem('brblog_base_conhecimento', JSON.stringify(baseConhecimentoPadrao));
+          }
+
+          let base = JSON.parse(localStorage.getItem('brblog_base_conhecimento') || '[]');
+          if (base.length === 0 && typeof baseConhecimentoPadrao !== 'undefined') {
+              base = baseConhecimentoPadrao;
+          }
+
+          let buscaNorm = normalizarTexto(termoBusca);
+          if (!buscaNorm) return null;
+
+          let palavrasBusca = buscaNorm.split(/\s+/).filter(Boolean);
+          if (palavrasBusca.length === 0) return null;
+
+          let resultados = [];
+          base.forEach(function(linha) {
+              if (!linha || linha.indexOf('|') === -1) return;
+              let partes = linha.split('|');
+              let perguntaBase = partes[0].trim();
+              let respostaBase = partes[1].trim();
+
+              let linhaCompleta = normalizarTexto(perguntaBase + " " + respostaBase);
+              let atendeTodas = palavrasBusca.every(palavra => linhaCompleta.indexOf(palavra) !== -1);
+
+              if (atendeTodas) {
+                  resultados.push("📌 **" + perguntaBase + "**\n" + respostaBase);
+              }
+          });
+
+          if (resultados.length > 0) {
+              return resultados.slice(0, 60).join("\n\n----------------------------------------\n\n");
+          }
+          return null;
+      }
+
+      function processarEnvioIa() {
+          const txt = document.getElementById('iaTxtPergunta');
+          if (!txt) return;
+          const pergunta = txt.value.trim();
+          if (!pergunta) return;
+
+          adicionarMensagemIaChat("👤 Você", pergunta);
+          txt.value = '';
+
+          let resposta = buscarRespostaNaBase(pergunta);
+          if (resposta) {
+              adicionarMensagemIaChat("🤖 Assistente IA", resposta);
+          } else {
+              adicionarMensagemIaChat("🤖 Assistente IA", "Não encontrei uma diretriz exata para isso na base atual. Clique em 'Ensinar IA' para adicionar!");
+          }
+          txt.focus();
+      }
+
+      segurarEvento('iaBtnEnviar', 'click', processarEnvioIa);
+      segurarEvento('iaTxtPergunta', 'keydown', function(e) {
+          if (e.key === 'Enter') {
+              e.preventDefault();
+              processarEnvioIa();
+          }
+      });
+
+      segurarEvento('iaBtnAprender', 'click', function() {
+          let novaPergunta = prompt("Digite a pergunta ou dúvida que deseja cadastrar:");
+          if (!novaPergunta || !novaPergunta.trim()) return;
+
+          let novaResposta = prompt("Digite a resposta correta para:\n\"" + novaPergunta + "\"");
+          if (!novaResposta || !novaResposta.trim()) return;
+
+          let base = JSON.parse(localStorage.getItem('brblog_base_conhecimento') || '[]');
+          base.push(novaPergunta.trim() + "|" + novaResposta.trim());
+          localStorage.setItem('brblog_base_conhecimento', JSON.stringify(base));
+
+          adicionarMensagemIaChat("🤖 Assistente IA", "Aprendizado salvo com sucesso!");
+          const txtPerg = document.getElementById('iaTxtPergunta');
+          if (txtPerg) txtPerg.focus();
+      });
+
+      // --- FORMULÁRIO DE NOVO ATENDIMENTO ---
+      const opcoesPidOriginal = [
+          "",
+          "RG/CNH",
+          "Possui um adicional? (Sim ou Não)",
+          "Data do Vencimento da Fatura",
+          "Valor da Ultima Compra (Valor Exato)",
+          "Valor da Ultima Fatura (Valor Exato)",
+          "Puro Crédito / Múltiplo"
+      ];
+
+      let atualizandoCombos = false;
+
+      const templateTexto = 
+      '--------------------------------------------------\n' +
+      'Inicio do Log\n' +
+      '--------------------------------------------------\n' +
+      'Cabeçalho do Log:\n' +
+      'Dados do PID:\n' +
+      'CPF: [PlaceHolderCPF]\n' +
+      'Nome Completo: [PlaceHolderNome]\n' +
+      'Bandeira: [PlaceHolderBandeira]\n' +
+      'Últimos 4 Dígitos: [PlaceHolderUltimos]\n' +
+      'Telefone de Cadastro: [PlaceHolderTelCadastro]\n' +
+      'Telefone de Contato: [PlaceHolderTelContato]\n\n' +
+      '[PlaceHolderPid1]: [PlaceHolderRespostaPid1]\n' +
+      '[PlaceHolderPid2]: [PlaceHolderRespostaPid2]\n\n' +
+      'Dados do Atendimento:\n' +
+      'Cliente: [PlaceHolderNomeAtendimento] entrou em contato informando que: [PlaceHolderMotivo]\n\n' +
+      'Tratativa realizada: [PlaceHolderTratativa]\n' +
+      '--------------------------------------------------\n' +
+      'Fim do Log\n' +
+      '--------------------------------------------------';
+
+      function carregarOpcoesPid() {
+          const cb1 = document.getElementById('cbxPid1');
+          const cb2 = document.getElementById('cbxPid2');
+          if (!cb1 || !cb2) return;
+          cb1.innerHTML = ''; cb2.innerHTML = '';
+          opcoesPidOriginal.forEach(function(op) {
+              cb1.appendChild(new Option(op, op));
+              cb2.appendChild(new Option(op, op));
+          });
+
+          cb1.value = "";
+          cb2.value = "";
+          handlePidChange(1);
+      }
+
+      function handlePidChange(origem) {
+          if (atualizandoCombos) return;
+          atualizandoCombos = true;
+          const cb1 = document.getElementById('cbxPid1');
+          const cb2 = document.getElementById('cbxPid2');
+          if (!cb1 || !cb2) {
+              atualizandoCombos = false;
+              return;
+          }
+          const val1 = cb1.value; const val2 = cb2.value;
+
+          if (origem === 1) {
+              const opcoesFiltradas = opcoesPidOriginal.filter(function(op) {
+                  return op === "" || op !== val1;
+              });
+              cb2.innerHTML = '';
+              opcoesFiltradas.forEach(function(op) {
+                  cb2.appendChild(new Option(op, op));
+              });
+              if (opcoesFiltradas.includes(val2)) cb2.value = val2;
+          } else {
+              const opcoesFiltradas = opcoesPidOriginal.filter(function(op) {
+                  return op === "" || op !== val2;
+              });
+              cb1.innerHTML = '';
+              opcoesFiltradas.forEach(function(op) {
+                  cb1.appendChild(new Option(op, op));
+              });
+              if (opcoesFiltradas.includes(val1)) cb1.value = val1;
+          }
+          atualizandoCombos = false;
+          atualizarPreVisualizacao();
+      }
+
+      function validarCPF(cpf) {
+          cpf = cpf.replace(/[^\d]/g, '');
+          if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+          let soma = 0;
+          for (let i = 0; i < 9; i++) soma += parseInt(cpf.charAt(i)) * (10 - i);
+          let resto = 11 - (soma % 11);
+          if (resto === 10 || resto === 11) resto = 0;
+          if (resto !== parseInt(cpf.charAt(9))) return false;
+          soma = 0;
+          for (let i = 0; i < 10; i++) soma += parseInt(cpf.charAt(i)) * (11 - i);
+          resto = 11 - (soma % 11);
+          if (resto === 10 || resto === 11) resto = 0;
+          if (resto !== parseInt(cpf.charAt(10))) return false;
+          return true;
+      }
+
+      function aplicarMascaraCPF(e) {
+          let v = e.target.value.replace(/\D/g, '');
+          if (v.length > 11) v = v.slice(0, 11);
+          if (v.length > 9) v = v.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4");
+          else if (v.length > 6) v = v.replace(/^(\d{3})(\d{3})(\d{1,3})$/, "$1.$2.$3");
+          else if (v.length > 3) v = v.replace(/^(\d{3})(\d{1,3})$/, "$1.$2");
+          e.target.value = v;
+
+          const lbl = document.getElementById('lblValidaCPF');
+          if (v.length === 14) {
+              if (validarCPF(v)) {
+                  e.target.style.backgroundColor = '#d4edda';
+                  if (lbl) {
+                      lbl.style.color = 'green';
+                      lbl.textContent = 'CPF Válido';
+                  }
+              } else {
+                  e.target.style.backgroundColor = '#f8d7da';
+                  if (lbl) {
+                      lbl.style.color = 'red';
+                      lbl.textContent = 'CPF Inválido';
+                  }
+              }
+          } else {
+              e.target.style.backgroundColor = '#ffffff';
+              if (lbl) lbl.textContent = '';
+          }
+          atualizarPreVisualizacao();
+      }
+
+      function aplicarMascaraTelefone(e) {
+          let v = e.target.value.replace(/\D/g, '');
+          if (v.length > 11) v = v.slice(0, 11);
+          if (v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
+          else if (v.length > 6) v = v.replace(/^(\d{2})(\d{4})(\d{0,4})$/, "($1) $2-$3");
+          else if (v.length > 2) v = v.replace(/^(\d{2})(\d{0,5})$/, "($1) $2");
+          else if (v.length > 0) v = v.replace(/^(\d{0,2})$/, "($1");
+          e.target.value = v;
+          atualizarPreVisualizacao();
+      }
+
+      function atualizarPreVisualizacao() {
+          const previewBox = document.getElementById('previewBox');
+          if (!previewBox) return;
+
+          let texto = templateTexto;
+          const txtCpf = document.getElementById('txtCPF');
+          const txtNome = document.getElementById('txtNome');
+          const cbBandeira = document.getElementById('cbxBandeira');
+          const txtUltimos = document.getElementById('txtUltimos4');
+          const txtTelCad = document.getElementById('txtTelCadastro');
+          const rdbSim = document.getElementById('rdbSim');
+          const txtTelCont = document.getElementById('txtTelContato');
+          const cbPid1 = document.getElementById('cbxPid1');
+          const txtResp1 = document.getElementById('txtRespPid1');
+          const cbPid2 = document.getElementById('cbxPid2');
+          const txtResp2 = document.getElementById('txtRespPid2');
+          const txtMot = document.getElementById('txtMotivo');
+          const txtTrat = document.getElementById('txtTratativa');
+
+          const cpf = txtCpf ? txtCpf.value : '';
+          const nome = txtNome ? txtNome.value : '';
+          const bandeira = cbBandeira ? cbBandeira.value : '';
+          const ultimos = txtUltimos ? txtUltimos.value : '';
+          const telCad = txtTelCad ? txtTelCad.value : '';
+          const simChecked = rdbSim ? rdbSim.checked : true;
+          const telCont = simChecked ? telCad : (txtTelCont ? txtTelCont.value : '');
+          const pid1 = cbPid1 ? cbPid1.value : '';
+          const resp1 = txtResp1 ? txtResp1.value : '';
+          const pid2 = cbPid2 ? cbPid2.value : '';
+          const resp2 = txtResp2 ? txtResp2.value : '';
+          const motivo = txtMot ? txtMot.value : '';
+          const tratativa = txtTrat ? txtTrat.value : '';
+         
+          const nomeAtendimento = nome ? nome : 'Cliente';
+
+          texto = texto.replace('[PlaceHolderCPF]', cpf);
+          texto = texto.replace('[PlaceHolderNome]', nome);
+          texto = texto.replace('[PlaceHolderNomeAtendimento]', nomeAtendimento); 
+          texto = texto.replace('[PlaceHolderBandeira]', bandeira);
+          texto = texto.replace('[PlaceHolderUltimos]', ultimos);
+          texto = texto.replace('[PlaceHolderTelCadastro]', telCad);
+          texto = texto.replace('[PlaceHolderTelContato]', telCont);
+          texto = texto.replace('[PlaceHolderPid1]', pid1 || 'PID Opcional 1');
+          texto = texto.replace('[PlaceHolderRespostaPid1]', resp1);
+          texto = texto.replace('[PlaceHolderPid2]', pid2 || 'PID Opcional 2');
+          texto = texto.replace('[PlaceHolderRespostaPid2]', resp2);
+          texto = texto.replace('[PlaceHolderMotivo]', motivo);
+          texto = texto.replace('[PlaceHolderTratativa]', tratativa);
+
+          previewBox.textContent = texto;
+      }
+
+      segurarEvento('rdbSim', 'change', function() {
+          const divContato = document.getElementById('divTelContato');
+          const boxRestr = document.getElementById('boxRestricoes');
+          const txtCont = document.getElementById('txtTelContato');
+          if (divContato) divContato.style.display = 'none';
+          if (boxRestr) boxRestr.style.display = 'none';
+          if (txtCont) txtCont.value = '';
+          atualizarPreVisualizacao();
+      });
+
+      segurarEvento('rdbNao', 'change', function() {
+          const divContato = document.getElementById('divTelContato');
+          const boxRestr = document.getElementById('boxRestricoes');
+          const txtCont = document.getElementById('txtTelContato');
+          if (divContato) divContato.style.display = 'block';
+          if (boxRestr) boxRestr.style.display = 'block';
+          if (txtCont) txtCont.focus();
+          atualizarPreVisualizacao();
+      });
+
+      segurarEvento('txtCPF', 'input', aplicarMascaraCPF);
+      segurarEvento('txtTelCadastro', 'input', aplicarMascaraTelefone);
+      segurarEvento('txtTelContato', 'input', aplicarMascaraTelefone);
+      segurarEvento('txtNome', 'input', atualizarPreVisualizacao);
+      segurarEvento('cbxBandeira', 'change', atualizarPreVisualizacao);
+      segurarEvento('txtUltimos4', 'input', atualizarPreVisualizacao);
+      segurarEvento('cbxPid1', 'change', function() { handlePidChange(1); });
+      segurarEvento('cbxPid2', 'change', function() { handlePidChange(2); });
+      segurarEvento('txtRespPid1', 'input', atualizarPreVisualizacao);
+      segurarEvento('txtRespPid2', 'input', atualizarPreVisualizacao);
+      segurarEvento('txtMotivo', 'input', atualizarPreVisualizacao);
+      segurarEvento('txtTratativa', 'input', atualizarPreVisualizacao);
+
+      segurarEvento('btnCopiarCpf', 'click', function() {
+          const txtCpf = document.getElementById('txtCPF');
+          if (txtCpf && txtCpf.value) navigator.clipboard.writeText(txtCpf.value);
+      });
+
+      // --- FUNÇÃO DE VALIDAÇÃO UNIFICADA ---
+      function validarFormulario() {
+          const txtCpf = document.getElementById('txtCPF');
+          const txtNome = document.getElementById('txtNome');
+          const cbBandeira = document.getElementById('cbxBandeira');
+          const txtUltimos4 = document.getElementById('txtUltimos4');
+          const txtTelCad = document.getElementById('txtTelCadastro');
+          const rdbSim = document.getElementById('rdbSim');
+          const txtTelCont = document.getElementById('txtTelContato');
+          const cbPid1 = document.getElementById('cbxPid1');
+          const txtResp1 = document.getElementById('txtRespPid1');
+          const cbPid2 = document.getElementById('cbxPid2');
+          const txtResp2 = document.getElementById('txtRespPid2');
+          const txtMot = document.getElementById('txtMotivo');
+          const txtTrat = document.getElementById('txtTratativa');
+
+          const cpf = txtCpf ? txtCpf.value.trim() : '';
+          const nome = txtNome ? txtNome.value.trim() : '';
+          const bandeira = cbBandeira ? cbBandeira.value : '';
+          const ultimos4 = txtUltimos4 ? txtUltimos4.value.trim() : '';
+          const telCad = txtTelCad ? txtTelCad.value.trim() : '';
+          const simChecked = rdbSim ? rdbSim.checked : true;
+          const telCont = txtTelCont ? txtTelCont.value.trim() : '';
+          const pid1Sel = cbPid1 ? cbPid1.value : '';
+          const resp1 = txtResp1 ? txtResp1.value.trim() : '';
+          const pid2Sel = cbPid2 ? cbPid2.value : '';
+          const resp2 = txtResp2 ? txtResp2.value.trim() : '';
+          const motivo = txtMot ? txtMot.value.trim() : '';
+          const tratativa = txtTrat ? txtTrat.value.trim() : '';
+
+          let camposFaltando = [];
+
+          if (!cpf) camposFaltando.push("CPF");
+          if (!nome) camposFaltando.push("Nome Completo");
+          if (!bandeira || bandeira === "Selecione...") camposFaltando.push("Bandeira");
+          if (!ultimos4) camposFaltando.push("Últimos 4 Dígitos do Cartão");
+          if (!telCad) camposFaltando.push("Telefone de Cadastro");
+          
+          if (!simChecked && !telCont) {
+              camposFaltando.push("Telefone de Contato");
+          }
+
+          if (!pid1Sel || !resp1) camposFaltando.push("PID Opcional 1 (Seleção e Resposta)");
+          if (!pid2Sel || !resp2) camposFaltando.push("PID Opcional 2 (Seleção e Resposta)");
+          if (!motivo) camposFaltando.push("Motivo do Contato");
+          if (!tratativa) camposFaltando.push("Tratativa Realizada (Resolução)");
+
+          if (camposFaltando.length > 0) {
+              alert("Por favor, preencha os seguintes campos obrigatórios:\n\n• " + camposFaltando.join("\n• "));
+              return false;
+          }
+          return true;
+      }
+
+      segurarEvento('btnSalvar', 'click', function() {
+          if (!validarFormulario()) return;
+
+          const txtCpf = document.getElementById('txtCPF');
+          const txtNome = document.getElementById('txtNome');
+          const cbBandeira = document.getElementById('cbxBandeira');
+          const previewBox = document.getElementById('previewBox');
+
+          const cpf = txtCpf ? txtCpf.value.trim() : '';
+          const nome = txtNome ? txtNome.value.trim() : '';
+          const bandeira = cbBandeira ? cbBandeira.value : '';
+          const logTextoFormatado = previewBox ? previewBox.textContent : '';
+
+          const novoAtendimento = {
+              id: Date.now().toString().slice(-4),
+              dataHora: new Date().toLocaleString('pt-BR'),
+              cpf: cpf, 
+              nome: nome, 
+              bandeira: bandeira,
+              logCompleto: logTextoFormatado
+          };
+
+          const atendimentos = JSON.parse(localStorage.getItem('brblog_atendimentos') || '[]');
+          atendimentos.push(novoAtendimento);
+          localStorage.setItem('brblog_atendimentos', JSON.stringify(atendimentos));
+
+          alert('Atendimento salvo com sucesso!');
+          
+          const inputs = document.querySelectorAll('input:not([type="radio"]), textarea');
+          inputs.forEach(function(el) { el.value = ''; });
+          if (cbBandeira) cbBandeira.selectedIndex = 0;
+          const rdbSim = document.getElementById('rdbSim');
+          if (rdbSim) rdbSim.checked = true;
+          
+          const divContato = document.getElementById('divTelContato');
+          const boxRestr = document.getElementById('boxRestricoes');
+          if (divContato) divContato.style.display = 'none';
+          if (boxRestr) boxRestr.style.display = 'none';
+          if (txtCpf) txtCpf.style.backgroundColor = '#ffffff';
+
+          carregarOpcoesPid();
+          atualizarPreVisualizacao();
+
+          ocultarTodasViews();
+          if (viewDashboard) viewDashboard.classList.add('active');
+          carregarAtendimentosHoje();
+      });
+
+      segurarEvento('btnCopiarLogForm', 'click', function() {
+          const previewBox = document.getElementById('previewBox');
+          if (previewBox) {
+              const textoLog = previewBox.textContent;
+              navigator.clipboard.writeText(textoLog).then(function() {
+                  alert('Log copiado para a área de transferência!');
+              });
+          }
+      });
+
+      segurarEvento('btnLimpar', 'click', function() {
+          if (confirm('Deseja realmente limpar todos os campos do atendimento?')) {
+              const inputs = document.querySelectorAll('input:not([type="radio"]), textarea');
+              inputs.forEach(function(el) { el.value = ''; });
+              const cbBandeira = document.getElementById('cbxBandeira');
+              if (cbBandeira) cbBandeira.selectedIndex = 0;
+              const rdbSim = document.getElementById('rdbSim');
+              if (rdbSim) rdbSim.checked = true;
+              
+              const divContato = document.getElementById('divTelContato');
+              const boxRestr = document.getElementById('boxRestricoes');
+              if (divContato) divContato.style.display = 'none';
+              if (boxRestr) boxRestr.style.display = 'none';
+              const txtCpf = document.getElementById('txtCPF');
+              if (txtCpf) {
+                  txtCpf.style.backgroundColor = '#ffffff';
+                  txtCpf.focus();
+              }
+              carregarOpcoesPid();
+              atualizarPreVisualizacao();
+          }
+      });
+
+      // --- DASHBOARD ---
+      function carregarAtendimentosHoje() {
+          const tbody = document.getElementById('tblCorpo');
+          const lblContador = document.getElementById('lblContador');
+          if (!tbody) return;
+          
+          const atendimentos = JSON.parse(localStorage.getItem('brblog_atendimentos') || '[]');
+          const hoje = new Date().toLocaleDateString('pt-BR');
+          
+          const atendimentosHoje = atendimentos.filter(function(a) {
+              return a.dataHora && a.dataHora.startsWith(hoje);
+          });
+          let atendimentosCache = atendimentosHoje.slice().reverse();
+
+          if (lblContador) {
+              lblContador.textContent = 'Atendimentos realizados hoje: ' + atendimentosHoje.length;
+          }
+
+          if (atendimentosCache.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Nenhum atendimento registrado hoje.</td></tr>';
+              return;
+          }
+
+          tbody.innerHTML = '';
+          atendimentosCache.forEach(function(item, index) {
+              const tr = document.createElement('tr');
+              tr.innerHTML = '<td>' + (item.id || (index + 1)) + '</td>' +
+                  '<td>' + (item.dataHora || '') + '</td>' +
+                  '<td>' + (item.cpf || '') + '</td>' +
+                  '<td>' + (item.nome || '') + '</td>' +
+                  '<td>' + (item.bandeira || '') + '</td>';
+              tr.addEventListener('dblclick', function() {
+                  abrirDetalhesAtendimento(item);
+              });
+              tbody.appendChild(tr);
+          });
+      }
+
+      function abrirDetalhesAtendimento(item) {
+          const modal = document.getElementById('modalDetalhes');
+          const conteudoLog = document.getElementById('modalConteudoLog');
+          if (conteudoLog) conteudoLog.textContent = item.logCompleto || 'Log indisponível.';
+          if (modal) modal.style.display = 'flex';
+      }
+
+      function fecharModal() {
+          const modal = document.getElementById('modalDetalhes');
+          if (modal) modal.style.display = 'none';
+      }
+
+      segurarEvento('btnCloseModal', 'click', fecharModal);
+      segurarEvento('btnModalFechar', 'click', fecharModal);
+      segurarEvento('btnModalCopiar', 'click', function() {
+          const conteudoLog = document.getElementById('modalConteudoLog');
+          if (conteudoLog) {
+              const texto = conteudoLog.textContent;
+              navigator.clipboard.writeText(texto).then(function() {
+                  alert('Log copiado para a área de transferência!');
+              });
+          }
+      });
+
+      window.addEventListener('click', function(e) {
+          const modal = document.getElementById('modalDetalhes');
+          if (e.target === modal) fecharModal();
+      });
+
+      segurarEvento('menuAtualizarLista', 'click', function() {
+          carregarAtendimentosHoje();
+      });
+
+      segurarEvento('menuLimparBase', 'click', function() {
+          if (confirm('Deseja realmente limpar a base de dados local de hoje?')) {
+              localStorage.removeItem('brblog_atendimentos');
+              carregarAtendimentosHoje();
+          }
+      });
+
+      // --- LÓGICA DE FEEDBACK / BUG ---
+      segurarEvento('menuFeedback', 'click', function() {
+          const modal = document.getElementById('modalFeedback');
+          if (modal) modal.style.display = 'flex';
+      });
+
+      segurarEvento('btnCopiarEmail', 'click', function() {
+          const emailInput = document.getElementById('txtEmailFeedback');
+          if (emailInput) {
+              navigator.clipboard.writeText(emailInput.value).then(function() {
+                  alert('E-mail copiado para a área de transferência!');
+              }).catch(function(err) {
+                  console.error('Erro ao copiar e-mail: ', err);
+              });
+          }
+      });
+
+      function fecharModalFeedback() {
+          const modal = document.getElementById('modalFeedback');
+          if (modal) modal.style.display = 'none';
+      }
+
+      segurarEvento('btnFecharFeedback', 'click', fecharModalFeedback);
+      segurarEvento('btnCloseFeedback', 'click', fecharModalFeedback);
+
+      window.addEventListener('click', function(e) {
+          const modal = document.getElementById('modalFeedback');
+          if (e.target === modal) {
+              fecharModalFeedback();
+          }
+      });
+
+      function alternarDarkMode() {
+          document.body.classList.toggle('dark-mode');
+          const estaEscuro = document.body.classList.contains('dark-mode');
+          localStorage.setItem('brblog_dark_mode', estaEscuro ? 'ativo' : 'inativo');
+      }
+
+      window.addEventListener('DOMContentLoaded', function() {
+          const preferenciaSalva = localStorage.getItem('brblog_dark_mode');
+          if (preferenciaSalva === 'ativo') {
+              document.body.classList.add('dark-mode');
+          }
+      });
+
+      // Atalhos globais
+      window.addEventListener('keydown', function(event) {
+          if (event.ctrlKey && event.altKey && event.key.toLowerCase() === 'd') {
+              event.preventDefault();
+              alternarDarkMode();
+          }
+      });
+
+      window.addEventListener('keydown', function(event) {
+          if (event.ctrlKey && event.altKey && event.key.toLowerCase() === 'a') {
+              event.preventDefault();
+              const btnNovoAtendimento = document.querySelector('#menuNovoAtendimento') || 
+                  Array.from(document.querySelectorAll('button')).find(el => el.textContent.includes('Novo Atendimento'));
+              if (btnNovoAtendimento) {
+                  btnNovoAtendimento.click();
+              }
+          }
+      });
+
+      window.addEventListener('keydown', function(event) {
+          if (event.ctrlKey && event.altKey && event.key.toLowerCase() === 'i') {
+              event.preventDefault();
+              const btnIA = document.querySelector('#menuIA') || 
+                  Array.from(document.querySelectorAll('button')).find(el => el.textContent.includes('IA de Apoio'));
+              if (btnIA) {
+                  btnIA.click();
+              }
+          }
+      });
+
+      window.addEventListener('keydown', function(event) {
+          if (event.ctrlKey && event.altKey && event.key.toLowerCase() === 'f') {
+              event.preventDefault();
+              const btnConsultar = document.querySelector('#menuConsultarHistorico') || 
+                  Array.from(document.querySelectorAll('button')).find(el => el.textContent.includes('Consultar Histórico'));
+              if (btnConsultar) {
+                  btnConsultar.click();
+              }
+          }
+      });
+
+      window.addEventListener('keydown', function(event) {
+          const tecla = event.key.toLowerCase();
+          
+          if (event.ctrlKey && event.altKey && tecla === 's') {
+              event.preventDefault();
+              
+              if (!validarFormulario()) return;
+
+              const btnSalvar = document.getElementById('btnSalvar') || 
+                  Array.from(document.querySelectorAll('button')).find(el => el.textContent.includes('Salvar'));
+              if (btnSalvar) {
+                  btnSalvar.click();
+              }
+          }
+          
+          else if (!event.ctrlKey && event.altKey && tecla === 'c') {
+              event.preventDefault();
+              
+              if (!validarFormulario()) return;
+
+              const btnCopiar = document.getElementById('btnCopiarLogForm') || 
+                  Array.from(document.querySelectorAll('button')).find(el => el.textContent.includes('Copiar Log'));
+              if (btnCopiar) {
+                  btnCopiar.click();
+              }
+          }
+      });
+
+      // --- INICIALIZAÇÃO ---
+      carregarOpcoesPid();
+      atualizarPreVisualizacao();
+      carregarAtendimentosHoje();
+      carregarBoasVindasIa();
+    </script>
+  </body>
+</html>
